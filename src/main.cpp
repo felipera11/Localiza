@@ -147,5 +147,5 @@ void loop(){
 
   }
   pBLEScan->clearResults();
-  delay(10000);
+  delay(12000);
 }
