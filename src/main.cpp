@@ -1,36 +1,30 @@
 
+#include <Arduino.h>
+#include <WiFi.h>
+#include <Firebase_ESP_Client.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+#include <Sensitive_data.h>
+
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #include <BLEScan.h>
 #include <BLEAdvertisedDevice.h>
-#include <Arduino.h>
-#include <WiFi.h>
-#include <Firebase_ESP_Client.h>
-#include <Sensitive_data.h>
 
-//Provide the token generation process info.
 #include "addons/TokenHelper.h"
-//Provide the RTDB payload printing info and other helper functions.
 #include "addons/RTDBHelper.h"
 
-// Insert your network credentials
+// ssid e senha do wifi
 #define WIFI_SSID SensitiveData::wifi_ssid
 #define WIFI_PASSWORD SensitiveData::wifi_password
 
-// Insert Firebase project API Key
+//api do projeto do firebase
 #define API_KEY SensitiveData::firebase_api_key
 
-// Insert RTDB URLefine the RTDB URL
-#define DATABASE_URL SensitiveData::firebase_database_url
-
-int scanTime = 5; //In seconds
-
-BLEScan* pBLEScan;
-BLEAdvertisedDevice actualDevice;
-BLEScanResults scanResults;
+//url do realtime database
+#define DATABASE_URL SensitiveData::firebase_database_url 
 
 FirebaseData fbdo;
-
 FirebaseAuth auth;
 FirebaseConfig config;
 
@@ -38,10 +32,24 @@ unsigned long sendDataPrevMillis = 0;
 int count = 0;
 bool signupOK = false;
 
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP);
 
-void setup() {
+unsigned long time_now;
+String path_with_time;
+
+std::string scanner_mac_address;
+
+int scanTime = 5; //In seconds
+BLEScan* pBLEScan;
+BLEAdvertisedDevice actualDevice;
+BLEScanResults scanResults;
+
+std::string path_upload_firebase;
+std::string beacon_address;
+
+void setup(){
   Serial.begin(115200);
-  
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to Wi-Fi");
   while (WiFi.status() != WL_CONNECTED){
@@ -53,105 +61,91 @@ void setup() {
   Serial.println(WiFi.localIP());
   Serial.println();
 
-  // Assign the api key (required) 
+  scanner_mac_address = WiFi.macAddress().c_str();
+  Serial.print("MAC Address: ");
+  Serial.println(scanner_mac_address.c_str());
+
   config.api_key = API_KEY;
 
-  // Assign the RTDB URL (required) 
   config.database_url = DATABASE_URL;
 
-  // Sign up 
   if (Firebase.signUp(&config, &auth, "", "")){
-    Serial.println("ok");
+    Serial.println("Conectado ao Firebase");
     signupOK = true;
   }
   else{
     Serial.printf("%s\n", config.signer.signupError.message.c_str());
   }
 
-  // Assign the callback function for the long running token generation task 
-  config.token_status_callback = tokenStatusCallback; //see addons/TokenHelper.h
+  config.token_status_callback = tokenStatusCallback;
   
   Firebase.begin(&config, &auth);
   Firebase.reconnectWiFi(true);
 
+  timeClient.begin();
+  timeClient.setTimeOffset(-10800);  //configura o fuso horario para -3 horas
 
-  Serial.println("Initiating BLE");
   BLEDevice::init("");
-  pBLEScan = BLEDevice::getScan(); //create new scan
-  pBLEScan->setActiveScan(true); //active scan uses more power, but get results faster
+  pBLEScan = BLEDevice::getScan();
+  pBLEScan->setActiveScan(true);
   pBLEScan->setInterval(100);
-  pBLEScan->setWindow(99);  // less or equal setInterval value
+  pBLEScan->setWindow(99);
 
-  
 }
 
-void loop() { 
+void loop(){
+
+  timeClient.forceUpdate();    //atualiza o tempo do servidor NTP
+  time_now = timeClient.getEpochTime();   //retira só o tempo da string
+  Serial.print("Time: ");
+  Serial.println(time_now);
+
 
   pBLEScan->start(scanTime, false);
   Serial.println("Scan done!");
-
   scanResults = pBLEScan->getResults();
-  int count_devices = scanResults.getCount();
+  int count = scanResults.getCount();
+  for(int i = 0;i<count;i++){
 
-  for(int i = 0;i<count_devices;i++){
     Serial.print("Device n");
     Serial.println(i+1);
     actualDevice = scanResults.getDevice(i);
-    std::string address_device = "Address: " + actualDevice.getAddress().toString();
-    int rssi_device = actualDevice.getRSSI();      
-    Serial.println(address_device.c_str());
+    beacon_address = actualDevice.getAddress().toString();
+    int beacon_rssi = actualDevice.getRSSI();      
+    Serial.println(beacon_address.c_str());
     Serial.print("RSSI: ");
-    Serial.println(rssi_device);
-  }
+    Serial.println(beacon_rssi);
 
-  if (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 15000 || sendDataPrevMillis == 0)){
-    sendDataPrevMillis = millis();
-    // Write an Int number on the database path test/int
-    if (Firebase.RTDB.setInt(&fbdo, "test/int", count)){
+    path_upload_firebase = "beacons/" + beacon_address + "/" + scanner_mac_address + "/rssi";
+
+    if (Firebase.RTDB.setInt(&fbdo, path_upload_firebase, beacon_rssi)){
       Serial.println("PASSED");
-      Serial.println("PATH: " + fbdo.dataPath());
-      Serial.println("TYPE: " + fbdo.dataType());
+      Serial.print("PATH: ");
+      Serial.println(fbdo.dataPath());
+      Serial.print("TYPE: ");
+      Serial.println(fbdo.dataType());
     }
     else {
       Serial.println("FAILED");
-      Serial.println("REASON: " + fbdo.errorReason());
+      Serial.print("REASON: ");
+      Serial.println(fbdo.errorReason());
     }
-    count++;
-    
-    // Write an Float number on the database path test/float
-    if (Firebase.RTDB.setFloat(&fbdo, "test/float", 0.01 + random(0,100))){
+
+    path_upload_firebase = "beacons/" + beacon_address + "/" + scanner_mac_address + "/time";
+    if (Firebase.RTDB.setInt(&fbdo, path_upload_firebase, time_now)){
       Serial.println("PASSED");
-      Serial.println("PATH: " + fbdo.dataPath());
-      Serial.println("TYPE: " + fbdo.dataType());
+      Serial.print("PATH: ");
+      Serial.println(fbdo.dataPath());
+      Serial.print("TYPE: ");
+      Serial.println(fbdo.dataType());
     }
     else {
       Serial.println("FAILED");
-      Serial.println("REASON: " + fbdo.errorReason());
+      Serial.print("REASON: ");
+      Serial.println(fbdo.errorReason());
     }
+
   }
-
-  delay(5000);
-
+  pBLEScan->clearResults();
+  delay(10000);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -5,3 +5,4 @@
 .vscode/ipch
 src/Sensitive_data.cpp
 src/Sensitive_data.h
+examples/
