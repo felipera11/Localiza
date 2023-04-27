@@ -83,7 +83,7 @@ void setup(){
   Firebase.reconnectWiFi(true);
 
   timeClient.begin();
-  timeClient.setTimeOffset(-10800);  //configura o fuso horario para -3 horas
+  timeClient.setTimeOffset(0);  //configura o fuso horario para -3 horas
 
   BLEDevice::init("");
   pBLEScan = BLEDevice::getScan();
@@ -116,7 +116,7 @@ void loop(){
     Serial.print("RSSI: ");
     Serial.println(beacon_rssi);
 
-    path_upload_firebase = "beacons/" + beacon_address + "/" + scanner_mac_address + "/rssi";
+    path_upload_firebase = "localiza/beacons/" + beacon_address + "/" + scanner_mac_address + "/rssi";
 
     if (Firebase.RTDB.setInt(&fbdo, path_upload_firebase, beacon_rssi)){
       Serial.println("PASSED");
@@ -131,7 +131,7 @@ void loop(){
       Serial.println(fbdo.errorReason());
     }
 
-    path_upload_firebase = "beacons/" + beacon_address + "/" + scanner_mac_address + "/time";
+    path_upload_firebase = "localiza/beacons/" + beacon_address + "/" + scanner_mac_address + "/time";
     if (Firebase.RTDB.setInt(&fbdo, path_upload_firebase, time_now)){
       Serial.println("PASSED");
       Serial.print("PATH: ");
