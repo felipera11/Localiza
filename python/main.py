@@ -12,6 +12,8 @@ scanner_ref = db.reference('localiza/scanner')
 
 current_time = datetime.now()
 
+scanner_ref.delete()
+
 #por beacon
 for beacon_key in beacons_ref.get().keys():
     beacon_data = beacons_ref.child(beacon_key).get()
