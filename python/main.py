@@ -30,7 +30,7 @@ for beacon_key in beacons_ref.get().keys():
             beacons_ref.child(beacon_key).child(device_key).delete()
             print(f"Deleted {device_key} from {beacon_key}")
 
-        if device_data['rssi'] > lowest_rssi_value:
+        elif device_data['rssi'] > lowest_rssi_value:
             lowest_rssi_value = device_data['rssi']
             lowest_rssi_device = device_key
             lowest_rssi_time = device_data['time']
