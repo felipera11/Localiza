@@ -47,7 +47,8 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "cinttypes": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "iostream": "cpp"
     },
     "python.formatting.provider": "black",
     "python.analysis.typeCheckingMode": "basic"

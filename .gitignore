@@ -10,3 +10,4 @@ python/.venv
 python/venv
 python/serviceAccountKey.json
 web/login_data.html
+web/
