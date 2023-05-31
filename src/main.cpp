@@ -11,40 +11,48 @@
 #include "addons/TokenHelper.h"
 #include "addons/RTDBHelper.h"
 
+//defining the wifi credentials and firebase credentials
 #define WIFI_SSID SensitiveData::wifi_ssid
 #define WIFI_PASSWORD SensitiveData::wifi_password
 #define API_KEY SensitiveData::firebase_api_key
 #define DATABASE_URL SensitiveData::firebase_database_url
 #define scanTime 5
 
+//creating firebase objects
 FirebaseData fbdo;
 FirebaseAuth auth;
 FirebaseConfig config;
 
+//creating NTP objects for time sync
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
 
+//creating BLE objects for the scan
 BLEScan *pBLEScan;
 BLEAdvertisedDevice actualDevice;
 BLEScanResults scanResults;
 
+//creating auxiliar variables
 unsigned long time_now;
 unsigned long sendDataPrevMillis = 0;
-
 std::string scanner_mac_address;
 std::string beacon_address;
 
+//function to upload data to firebase
 void firebase_upload(std::string beacon_address, int beacon_rssi)
 {
   std::string path_upload_firebase;
 
+  //uploading beacon rssi to firebase
   path_upload_firebase = "localiza/beacons/" + beacon_address + "/" + scanner_mac_address + "/rssi";
   Firebase.RTDB.setInt(&fbdo, path_upload_firebase, beacon_rssi) ? Serial.println("Valor rssi subiu ok no path: " + fbdo.dataPath()) : Serial.println("Deu erro: " + fbdo.errorReason());
 
+  //uploading beacon time to firebase
   path_upload_firebase = "localiza/beacons/" + beacon_address + "/" + scanner_mac_address + "/time";
   Firebase.RTDB.setInt(&fbdo, path_upload_firebase, time_now) ? Serial.println("Valor time subiu ok no path: " + fbdo.dataPath()) : Serial.println("Deu erro: " + fbdo.errorReason());
 }
 
+//function to connect to wifi
 void wifi_connect()
 {
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -62,6 +70,7 @@ void wifi_connect()
   Serial.println(scanner_mac_address.c_str());
 }
 
+//function to connect to firebase
 void firebase_connect()
 {
 
@@ -82,16 +91,23 @@ void firebase_connect()
   }
 }
 
+//function to scan BLE devices
 void ble_scan()
 {
   int count;
   int beacon_rssi;
 
   Serial.println("Scanning...");
+
+  //starting the scan
   pBLEScan->start(scanTime, false);
   Serial.println("Scan done!");
+
+  //getting the results
   scanResults = pBLEScan->getResults();
   count = scanResults.getCount();
+
+  //iterating through the results and uploading to firebase
   for (int i = 0; i < count; i++)
   {
 
@@ -101,22 +117,28 @@ void ble_scan()
     beacon_rssi = actualDevice.getRSSI();
     Serial.println(beacon_address.c_str());
 
+    //uploading to firebase
     firebase_upload(beacon_address, beacon_rssi);
   }
+
+  //clearing the results to deallocate memory
   pBLEScan->clearResults();
 }
 
+//setup function
 void setup()
 {
   Serial.begin(115200);
 
+  //initializing wifi and firebase
   wifi_connect();
-
   firebase_connect();
 
+  //initializing time client
   timeClient.begin();
   timeClient.setTimeOffset(0);
 
+  //initializing BLE scan
   BLEDevice::init("");
   pBLEScan = BLEDevice::getScan();
   pBLEScan->setActiveScan(true);
@@ -124,19 +146,25 @@ void setup()
   pBLEScan->setWindow(99);
 }
 
+//loop function
 void loop()
 {
+
+  //uploading to firebase every 15 seconds
   if (millis() - sendDataPrevMillis > 15000 || sendDataPrevMillis == 0)
   {
+    //checking if firebase is ready
     if (Firebase.ready())
     {
       sendDataPrevMillis = millis();
 
+      //updating the time
       timeClient.forceUpdate();
       time_now = timeClient.getEpochTime();
       Serial.print("Time: ");
       Serial.println(time_now);
 
+      //scanning BLE devices
       ble_scan();
 
       Serial.println("---------------------------------");
