@@ -1,0 +1,20 @@
+quarto 1 = objeto 1, 2, 3
+quarto 2 = objeto 4, 5, 6
+quarto 3 = objeto 7, 8, 9
+deletar = objetos 10, 11, 12
+
+timestamp antigo: 1683131194
+
+timestamp novo: 1685798794
+
+1 normal
+2 normal
+3 normal
+
+4 quarto 1 menor rssi porem antigo
+5 quarto normal
+6 quarto normal
+
+7 quarto 2 menor rssi porem antigo
+8 normal
+9 normal

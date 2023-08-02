@@ -49,7 +49,7 @@ void firebase_upload(std::string beacon_address, int beacon_rssi)
 
   //uploading beacon time to firebase
   path_upload_firebase = "localiza/beacons/" + beacon_address + "/" + scanner_mac_address + "/time";
-  Firebase.RTDB.setInt(&fbdo, path_upload_firebase, time_now) ? Serial.println("Valor time subiu ok no path: " + fbdo.dataPath()) : Serial.println("Deu erro: " + fbdo.errorReason());
+  //Firebase.RTDB.setInt(&fbdo, path_upload_firebase, time_now) ? Serial.println("Valor time subiu ok no path: " + fbdo.dataPath()) : Serial.println("Deu erro: " + fbdo.errorReason());
 }
 
 //function to connect to wifi

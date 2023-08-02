@@ -11,3 +11,27 @@ python/venv
 python/serviceAccountKey.json
 web/login_data.html
 web/
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+localiza_web/node_modules
+localiza_web/.pnp
+localiza_web/.pnp.js
+
+# testing
+localiza_web/coverage
+
+# production
+localiza_web/build
+
+# misc
+localiza_web/.DS_Store
+localiza_web/.env.local
+localiza_web/.env.development.local
+localiza_web/.env.test.local
+localiza_web/.env.production.local
+
+localiza_web/npm-debug.log*
+localiza_web/yarn-debug.log*
+localiza_web/yarn-error.log*

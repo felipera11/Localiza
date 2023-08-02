@@ -41,4 +41,3 @@ for beacon_key in beacons_ref.get().keys():
             'time': lowest_rssi_time
         })
         print(f"Added {beacon_key} to {device_key}")
-
