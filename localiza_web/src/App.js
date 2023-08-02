@@ -1,6 +1,5 @@
 import './App.css';
 import { db } from "./firebase";
-import { uid } from "uid";
 import { set, ref, onValue, remove, update } from "firebase/database";
 import { useState, useEffect } from "react";
 
@@ -34,7 +33,6 @@ function App() {
   };
 
   const writeToDatabase = () => {
-    const uuid = uid();
     update(ref(db, `/localiza/dictionary/beacons`), {
       [address]: todo,
     });
@@ -91,6 +89,7 @@ function App() {
               onClick={() => {
                 setIsEdit(false);
                 setTodo("");
+                setAddress("");
               }}
             >
               Cancelar
