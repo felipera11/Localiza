@@ -37,6 +37,9 @@ unsigned long time_now;
 unsigned long sendDataPrevMillis = 0;
 std::string scanner_mac_address;
 std::string beacon_address;
+std::string path_update;
+
+bool update_status = false;
 
 //function to upload data to firebase
 void firebase_upload(std::string beacon_address, int beacon_rssi)
@@ -144,30 +147,30 @@ void setup()
   pBLEScan->setActiveScan(true);
   pBLEScan->setInterval(100);
   pBLEScan->setWindow(99);
+
+  path_update = "localiza/update_status/" + beacon_address;
 }
 
 //loop function
 void loop()
 {
+  update_status = Firebase.RTDB.getBool(&fbdo, path_update);
 
-  //uploading to firebase every 15 seconds
-  if (millis() - sendDataPrevMillis > 15000 || sendDataPrevMillis == 0)
+  //checking if already updated and checking if firebase is ready
+  if (!update_status && Firebase.ready())
   {
-    //checking if firebase is ready
-    if (Firebase.ready())
-    {
-      sendDataPrevMillis = millis();
+    //updating the time
+    timeClient.forceUpdate();
+    time_now = timeClient.getEpochTime();
+    Serial.print("Time: ");
+    Serial.println(time_now);
 
-      //updating the time
-      timeClient.forceUpdate();
-      time_now = timeClient.getEpochTime();
-      Serial.print("Time: ");
-      Serial.println(time_now);
+    //scanning BLE devices
+    ble_scan();
 
-      //scanning BLE devices
-      ble_scan();
+    //updating the status
+    Firebase.RTDB.setBool(&fbdo, path_update, true);
 
-      Serial.println("---------------------------------");
-    }
+    Serial.println("---------------------------------");
   }
 }
