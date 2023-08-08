@@ -34,7 +34,6 @@ BLEScanResults scanResults;
 
 //creating auxiliar variables
 unsigned long time_now;
-unsigned long sendDataPrevMillis = 0;
 std::string scanner_mac_address;
 std::string beacon_address;
 std::string path_update;
