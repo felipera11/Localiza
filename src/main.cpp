@@ -38,7 +38,7 @@ std::string scanner_mac_address;
 std::string beacon_address;
 std::string path_update;
 
-bool update_status = false;
+bool update_status = 0;
 
 //function to upload data to firebase
 void firebase_upload(std::string beacon_address, int beacon_rssi)
@@ -51,7 +51,7 @@ void firebase_upload(std::string beacon_address, int beacon_rssi)
 
   //uploading beacon time to firebase
   path_upload_firebase = "localiza/beacons/" + beacon_address + "/" + scanner_mac_address + "/time";
-  //Firebase.RTDB.setInt(&fbdo, path_upload_firebase, time_now) ? Serial.println("Valor time subiu ok no path: " + fbdo.dataPath()) : Serial.println("Deu erro: " + fbdo.errorReason());
+  Firebase.RTDB.setInt(&fbdo, path_upload_firebase, time_now) ? Serial.println("Valor time subiu ok no path: " + fbdo.dataPath()) : Serial.println("Deu erro: " + fbdo.errorReason());
 }
 
 //function to connect to wifi
@@ -147,17 +147,21 @@ void setup()
   pBLEScan->setInterval(100);
   pBLEScan->setWindow(99);
 
-  path_update = "localiza/update_status/" + beacon_address;
+  path_update = "localiza/update_status/" + scanner_mac_address;
+  Serial.println(path_update.c_str());
 }
 
 //loop function
 void loop()
 {
-  update_status = Firebase.RTDB.getBool(&fbdo, path_update);
-
+  bool success = Firebase.RTDB.getBool(&fbdo, path_update, &update_status);
+  Serial.println(update_status);
+  
+  //Serial.println("chegoiu aqui");
   //checking if already updated and checking if firebase is ready
   if (!update_status && Firebase.ready())
   {
+    Serial.println("Updating...");
     //updating the time
     timeClient.forceUpdate();
     time_now = timeClient.getEpochTime();
