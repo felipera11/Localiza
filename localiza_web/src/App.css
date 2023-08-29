@@ -115,3 +115,30 @@
   cursor: pointer;
   margin-right: 10px;
 }
+
+.home-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.button-container {
+  margin: 0 20px;
+  text-align: center;
+}
+
+.custom-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.custom-button:hover {
+  background-color: #0056b3;
+}
