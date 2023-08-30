@@ -7,10 +7,14 @@ src/Sensitive_data.cpp
 src/Sensitive_data.h
 examples/
 python/.venv
+python/spreadsheetID.py
 python/venv
 python/serviceAccountKey.json
 web/login_data.html
 web/
+python/sensitiveData.py
+python/__pycache__
+python/token.json
 
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
