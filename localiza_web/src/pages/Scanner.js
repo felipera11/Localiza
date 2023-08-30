@@ -80,7 +80,7 @@ function Scanner() {
           type="text"
           value={todo}
           onChange={handleTodoChange}
-          placeholder="Nome do Beacon"
+          placeholder="Nome do Scanner"
         />
         {isEdit ? (
           <div className="button-group">
@@ -96,7 +96,7 @@ function Scanner() {
             </button>
           </div>
         ) : (
-          <button className="submit" onClick={writeToDatabase}>Adicionar Beacon</button>
+          <button className="submit" onClick={writeToDatabase}>Adicionar Scanner</button>
         )}
       </div>
 
