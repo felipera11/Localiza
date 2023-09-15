@@ -155,7 +155,7 @@ void setup()
 void loop()
 {
   bool success = Firebase.RTDB.getBool(&fbdo, path_update, &update_status);
-  Serial.println(update_status);
+  //Serial.println(update_status);
   
   //Serial.println("chegoiu aqui");
   //checking if already updated and checking if firebase is ready
