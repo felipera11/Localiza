@@ -3,7 +3,7 @@
 #include <Firebase_ESP_Client.h>
 #include <NTPClient.h>
 #include <WiFiUdp.h>
-#include <Sensitive_data.h>
+#include "Sensitive_data.h"
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #include <BLEScan.h>
@@ -29,8 +29,6 @@ NTPClient timeClient(ntpUDP);
 
 //creating BLE objects for the scan
 BLEScan *pBLEScan;
-BLEAdvertisedDevice actualDevice;
-BLEScanResults scanResults;
 
 //creating auxiliar variables
 unsigned long time_now;
@@ -97,7 +95,7 @@ void firebase_connect()
 void ble_scan()
 {
   int count;
-  int beacon_rssi;
+  //int beacon_rssi;
 
   Serial.println("Scanning...");
 
@@ -106,21 +104,17 @@ void ble_scan()
   Serial.println("Scan done!");
 
   //getting the results
-  scanResults = pBLEScan->getResults();
-  count = scanResults.getCount();
+  count = pBLEScan->getResults().getCount();
 
   //iterating through the results and uploading to firebase
   for (int i = 0; i < count; i++)
   {
 
     Serial.print("Device ");
-    actualDevice = scanResults.getDevice(i);
-    beacon_address = actualDevice.getAddress().toString();
-    beacon_rssi = actualDevice.getRSSI();
-    Serial.println(beacon_address.c_str());
+    Serial.println(pBLEScan->getResults().getDevice(i).getAddress().toString().c_str());
 
     //uploading to firebase
-    firebase_upload(beacon_address, beacon_rssi);
+    firebase_upload(pBLEScan->getResults().getDevice(i).getAddress().toString(), pBLEScan->getResults().getDevice(i).getRSSI());
   }
 
   //clearing the results to deallocate memory
@@ -155,12 +149,11 @@ void setup()
 void loop()
 {
   bool success = Firebase.RTDB.getBool(&fbdo, path_update, &update_status);
-  //Serial.println(update_status);
   
-  //Serial.println("chegoiu aqui");
   //checking if already updated and checking if firebase is ready
   if (!update_status && Firebase.ready())
   {
+    pBLEScan->clearResults();
     Serial.println("Updating...");
     //updating the time
     timeClient.forceUpdate();
