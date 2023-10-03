@@ -49,7 +49,7 @@ while(1):
     current_time = datetime.now()
 
     #check if the last filter was more than 1 minute ago
-    if current_time - last_filter > timedelta(minutes=0.3):
+    if current_time - last_filter > timedelta(minutes=0.1):
 
         #check if the status check was already done 
         if status_check == False:
@@ -86,7 +86,7 @@ while(1):
                         #check if the device is in the dictionary
                         try:
                             dict_data_beacon[beacon_key]
-                            if current_time - device_time > timedelta(minutes=131400):
+                            if current_time - device_time > timedelta(minutes=1):
                                 beacons_ref.child(beacon_key).child(device_key).delete()
                                 print(f"Deleted {device_key} from {beacon_key}")
 
@@ -105,7 +105,7 @@ while(1):
                     
                     try:
                         valores_adicionar.append([dict_data_beacon[beacon_key], beacon_key, lowest_rssi_value, device_time, dict_data_scanner[lowest_rssi_device], lowest_rssi_device])
-                        result = sheet.values().append(spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME, valueInputOption="RAW", body={"values": valores_adicionar}).execute()
+                        result = sheet.values().update(spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME, valueInputOption="RAW", body={"values": valores_adicionar}).execute()
                     except:
                         print("No updatable Data")
                         

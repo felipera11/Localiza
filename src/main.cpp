@@ -94,12 +94,11 @@ void firebase_connect()
 //function to scan BLE devices
 void ble_scan()
 {
+  //number of devices found
   int count;
-  //int beacon_rssi;
-
-  Serial.println("Scanning...");
 
   //starting the scan
+  Serial.println("Scanning...");
   pBLEScan->start(scanTime, false);
   Serial.println("Scan done!");
 
@@ -127,6 +126,7 @@ void setup()
   Serial.begin(115200);
 
   //initializing wifi and firebase
+  //pBLEScan->clearResults();
   wifi_connect();
   firebase_connect();
 
@@ -153,7 +153,7 @@ void loop()
   //checking if already updated and checking if firebase is ready
   if (!update_status && Firebase.ready())
   {
-    pBLEScan->clearResults();
+    //pBLEScan->clearResults();
     Serial.println("Updating...");
     //updating the time
     timeClient.forceUpdate();
