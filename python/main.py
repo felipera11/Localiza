@@ -38,7 +38,7 @@ dict_data_beacon = dict_ref_beacon.get()
 scanner_ref.delete()
 
 #clear the spreadsheet
-result = sheet.values().clear(spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME).execute()
+#result = sheet.values().clear(spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME).execute()
 
 last_filter = datetime.now()
 status_check = False
@@ -105,7 +105,7 @@ while(1):
                     
                     try:
                         valores_adicionar.append([dict_data_beacon[beacon_key], beacon_key, lowest_rssi_value, device_time, dict_data_scanner[lowest_rssi_device], lowest_rssi_device])
-                        result = sheet.values().update(spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME, valueInputOption="RAW", body={"values": valores_adicionar}).execute()
+                        result = sheet.values().append(spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME, valueInputOption="RAW", body={"values": valores_adicionar}).execute()
                     except:
                         print("No updatable Data")
                         
